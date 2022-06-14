@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import pyperclip
 
 
 # ----- PASSWORD GENERATOR -----
@@ -20,8 +21,9 @@ def generate_pass(pass_len=15):
         password += symbol[random.randint(0, len(symbol)-1)]
         pass_len -= 1
     password_input.insert(0, password)
-    print(password)
-    # return password
+    # Copy generated password
+    pyperclip.copy(password)
+
 
 # ----- VALIDATE EMAIL ADDRESS -----
 import re
