@@ -5,6 +5,21 @@ from tkinter import *
 
 # ----- SAVE PASSWORD -----
 
+def save_password():
+    f = open('data.txt', 'a')
+    f.write(f'{website_input.get()} | {email_input.get()} | {password_input.get()}\n')
+    clean_inputs()
+    f.close()
+
+
+def clean_inputs():
+    """Clean all user inputs, restore placeholder text for an email and focus bock on the first input field."""
+    website_input.delete(0, END)
+    email_input.delete(0, END)
+    email_input.insert(0, "your_email@gmail.com")
+    password_input.delete(0, END)
+    website_input.focus()
+
 # ----- UI SETUP -----
 
 window = Tk()
@@ -31,9 +46,11 @@ password_label.grid(row=3, column=0, padx=10, sticky='e')
 # Entries
 website_input = Entry(width=40)
 website_input.grid(row=1, column=1, columnspan=2, sticky='w', pady=10)
+website_input.focus()
 
 email_input = Entry(width=40)
 email_input.grid(row=2, column=1, columnspan=2, sticky='w', pady=10)
+email_input.insert(0, "your_email@gmail.com")
 
 password_input = Entry(width=18)
 password_input.grid(row=3, column=1, sticky='w', pady=10)
@@ -42,7 +59,7 @@ password_input.grid(row=3, column=1, sticky='w', pady=10)
 gen_button = Button(text="Generate Password")
 gen_button.grid(row=3, column=2, pady=10, sticky='e')
 
-add_button = Button(text="Add", width=34)
+add_button = Button(text="Add", width=34, command=save_password)
 
 add_button.grid(row=4, column=1, columnspan=2, sticky='w', pady=10)
 
