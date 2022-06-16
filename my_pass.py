@@ -61,16 +61,23 @@ def save_password():
         # Temporally assign new_data to data
         data = new_data
         # Check if file has some content
-        if os.stat(file_name).st_size != 0:
+        try:
             f = open(file_name, 'r')
-            # If so, reassign found file deserialized content to 'data' variable
-            data = json.load(f)
-            data.update(new_data)
+        except FileNotFoundError:
+            f = open(file_name, 'w')
+            json.dump(data, f, indent=4)
+        else:
+            if os.stat(file_name).st_size != 0:
+                # If file is empty then reassign found file deserialized content to 'data' variable
+                data = json.load(f)
+                data.update(new_data)
+                f.close()
+            f = open(file_name, 'w')
+            json.dump(data, f, indent=4)
+
+        finally:
+            clean_inputs()
             f.close()
-        f = open(file_name, 'w')
-        json.dump(data, f, indent=4)
-        clean_inputs()
-        f.close()
 
 
 # ----- CLEAN INPUT FIELDS -----
@@ -84,9 +91,6 @@ def clean_inputs():
 
 def check_inputs(website, email, password):
     """Check all user inputs, returns False either website or password field is empty."""
-    # website = website_input.get()
-    # password = password_input.get()
-    # email = email_input.get()
     if len(website) == 0 or len(password) == 0 or len(email) == 0:
         messagebox.showinfo(title="...something goes wrong", message="Please don't leave any fields empty!")
         return False
@@ -134,9 +138,7 @@ password_input.grid(row=3, column=1, sticky='w', pady=10)
 # Buttons
 gen_button = Button(text="Generate Password", command=generate_pass)
 gen_button.grid(row=3, column=2, pady=10, sticky='e')
-
 add_button = Button(text="Add", width=34, command=save_password)
-
 add_button.grid(row=4, column=1, columnspan=2, sticky='w', pady=10)
 
 window.mainloop()
