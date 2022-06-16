@@ -1,7 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 import pyperclip
-
+import json
+import os
 
 # ----- PASSWORD GENERATOR -----
 import string
@@ -12,7 +13,6 @@ def generate_pass(pass_len=15):
     lower_letters = string.ascii_lowercase
     numbers = string.digits
     symbols = "~`!@#$%^&*()_-+={[}]|\:;\"'<,>.?/"
-    # pass_len = 10
     password_list = [upper_letters, lower_letters, numbers, symbols]
     password = ''
 
@@ -31,7 +31,8 @@ import re
 regex = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 
 def isValid(email):
-    """ Check email according to regex template. Return False if it's not match the regex expression. """
+    """ Check email according to regex template. Return False if it's not match the regex expression.
+    """
     email = ''.join(email)
     match = re.fullmatch(regex, email)
     if match is not None:
@@ -42,22 +43,35 @@ def isValid(email):
 
 # ----- SAVE PASSWORD -----
 def save_password():
-    """ Save password (FIFO) in *.txt file in the same directory. """
-    input_ok = check_inputs()
+    """ Save password (FIFO) in *.json file in the root directory. """
+    website = website_input.get()
     email = email_input.get()
-    if not input_ok:
-        messagebox.showinfo(title="...something goes wrong", message="Please don't leave any fields empty!")
-    else:
-        if isValid(email):
-            is_ok = messagebox.askokcancel(title="Check the input before save",
-                                   message=f"Summary: \n\nEmail/username: {email_input.get()}\n"
-                                           f"Password: {password_input.get()}\n\nEverything is correct?")
+    password = password_input.get()
+    file_name = "data.json"
+    input_ok = check_inputs(website, email, password)
 
-            if is_ok:
-                f = open('data.txt', 'a')
-                f.write(f'{website_input.get()} | {email_input.get()} | {password_input.get()}\n')
-                clean_inputs()
-                f.close()
+    if input_ok:
+        # Prepare new data to insert
+        new_data = {
+            website: {
+                "email": email,
+                "password": password
+            }
+        }
+        # Temporally assign new_data to data
+        data = new_data
+        # Check if file has some content
+        if os.stat(file_name).st_size != 0:
+            f = open(file_name, 'r')
+            # If so, reassign found file deserialized content to 'data' variable
+            data = json.load(f)
+            data.update(new_data)
+            f.close()
+        f = open(file_name, 'w')
+        json.dump(data, f, indent=4)
+        clean_inputs()
+        f.close()
+
 
 # ----- CLEAN INPUT FIELDS -----
 def clean_inputs():
@@ -68,14 +82,19 @@ def clean_inputs():
     password_input.delete(0, END)
     website_input.focus()
 
-def check_inputs():
+def check_inputs(website, email, password):
     """Check all user inputs, returns False either website or password field is empty."""
-    website = website_input.get()
-    password = password_input.get()
-    if len(website) == 0 or len(password) == 0:
+    # website = website_input.get()
+    # password = password_input.get()
+    # email = email_input.get()
+    if len(website) == 0 or len(password) == 0 or len(email) == 0:
+        messagebox.showinfo(title="...something goes wrong", message="Please don't leave any fields empty!")
         return False
     else:
-        return True
+        if isValid(email):
+            return True
+        else:
+            return False
 
 
 # ----- UI SETUP -----
